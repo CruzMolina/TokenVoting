@@ -21,7 +21,14 @@ button {
   padding: 5px;
 }
 
-h1, h2 {
+h1 {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+h2 {
   display: inline-block;
   vertical-align: middle;
   margin-top: 0px;
@@ -29,13 +36,13 @@ h1, h2 {
 }
 
 h2 {
-  color: #AAA;
+  color: #aaa;
   font-size: 32px;
 }
 
 h3 {
   font-weight: normal;
-  color: #AAA;
+  color: #aaa;
   font-size: 24px;
 }
 
