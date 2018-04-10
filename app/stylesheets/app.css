@@ -24,7 +24,7 @@ button {
 h1 {
   display: inline-block;
   vertical-align: middle;
-  margin-top: 0px;
+  margin-top: -10px;
   margin-bottom: 0px;
 }
 
