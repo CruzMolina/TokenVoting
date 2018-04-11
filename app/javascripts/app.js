@@ -2,41 +2,49 @@
 import "../stylesheets/app.css";
 
 // Import libraries we need.
-import { default as Web3} from 'web3';
-import { default as contract } from 'truffle-contract'
+import { default as Web3 } from "web3";
+import { default as contract } from "truffle-contract";
 
 // Import our contract artifacts and turn them into usable abstractions.
-import voting_artifacts from '../../build/contracts/Voting.json'
+import voting_artifacts from "../../build/contracts/Voting.json";
 
 // Voting is our usable abstraction, which we'll use through the code below.
 var Voting = contract(voting_artifacts);
 
-let candidates = {}
+let candidates = {};
 
 let tokenPrice = null;
 
 window.voteForCandidate = function(candidate) {
   let candidateName = $("#candidate").val();
   let voteTokens = $("#vote-tokens").val();
-  $("#msg").html("Vote has been submitted. The vote count will increment as soon as the vote is recorded on the blockchain. Please wait.")
+  $("#msg").html(
+    "Vote has been submitted. The vote count will increment as soon as the vote is recorded on the blockchain. Please wait."
+  );
   $("#candidate").val("");
   $("#vote-tokens").val("");
 
-    /* Voting.deployed() returns an instance of the contract. Every call
+  /* Voting.deployed() returns an instance of the contract. Every call
      * in Truffle returns a promise which is why we have used then()
      * everywhere we have a transaction call
      */
-    Voting.deployed().then(function(contractInstance) {
-      contractInstance.voteForCandidate(candidateName, voteTokens, {gas: 140000, from: web3.eth.accounts[0]}).then(function() {
+  Voting.deployed().then(function(contractInstance) {
+    contractInstance
+      .voteForCandidate(candidateName, voteTokens, {
+        gas: 140000,
+        from: web3.eth.accounts[0]
+      })
+      .then(function() {
         let div_id = candidates[candidateName];
-        return contractInstance.totalVotesFor.call(candidateName).then(function(v) {
-          $("#" + div_id).html(v.toString());
-          $("#msg").html("");
-        });
+        return contractInstance.totalVotesFor
+          .call(candidateName)
+          .then(function(v) {
+            $("#" + div_id).html(v.toString());
+            $("#msg").html("");
+          });
       });
-    });
-  }
-
+  });
+};
 
 /* The user enters the total no. of tokens to buy. We calculate the total cost and send it in
  * the request. We have to send the value in Wei. So, we use the toWei helper method to convert
@@ -48,15 +56,19 @@ window.buyTokens = function() {
   let price = tokensToBuy * tokenPrice;
   $("#buy-msg").html("Purchase order has been submitted. Please wait.");
   Voting.deployed().then(function(contractInstance) {
-    contractInstance.buy({value: web3.toWei(price, 'ether'), from: web3.eth.accounts[0]}).then(function(v) {
-      $("#buy-msg").html("");
-      web3.eth.getBalance(contractInstance.address, function(error, result) {
-        $("#contract-balance").html(web3.fromWei(result.toString()) + " Ether");
+    contractInstance
+      .buy({ value: web3.toWei(price, "ether"), from: web3.eth.accounts[0] })
+      .then(function(v) {
+        $("#buy-msg").html("");
+        web3.eth.getBalance(contractInstance.address, function(error, result) {
+          $("#contract-balance").html(
+            web3.fromWei(result.toString()) + " Ether"
+          );
+        });
       });
-    })
   });
   populateTokenData();
-}
+};
 
 window.lookupVoterInfo = function() {
   let address = $("#voter-info").val();
@@ -67,12 +79,14 @@ window.lookupVoterInfo = function() {
       $("#votes-cast").empty();
       $("#votes-cast").append("Votes cast per candidate: <br>");
       let allCandidates = Object.keys(candidates);
-      for(let i=0; i < allCandidates.length; i++) {
-        $("#votes-cast").append(allCandidates[i] + ": " + votesPerCandidate[i] + "<br>");
+      for (let i = 0; i < allCandidates.length; i++) {
+        $("#votes-cast").append(
+          allCandidates[i] + ": " + votesPerCandidate[i] + "<br>"
+        );
       }
     });
   });
-}
+};
 
 /* Instead of hardcoding the candidates hash, we now fetch the candidate list from
  * the blockchain and populate the array. Once we fetch the candidates, we setup the
@@ -81,7 +95,7 @@ window.lookupVoterInfo = function() {
 function populateCandidates() {
   Voting.deployed().then(function(contractInstance) {
     contractInstance.allCandidates.call().then(function(candidateArray) {
-      for(let i=0; i < candidateArray.length; i++) {
+      for (let i = 0; i < candidateArray.length; i++) {
         /* We store the candidate names as bytes32 on the blockchain. We use the
          * handy toUtf8 method to convert from bytes32 to string
          */
@@ -107,8 +121,14 @@ function populateCandidateVotes() {
 }
 
 function setupCandidateRows() {
-  Object.keys(candidates).forEach(function (candidate) { 
-    $("#candidate-rows").append("<tr><td>" + candidate + "</td><td id='" + candidates[candidate] + "'></td></tr>");
+  Object.keys(candidates).forEach(function(candidate) {
+    $("#candidate-rows").append(
+      "<tr><td>" +
+        candidate +
+        "</td><td id='" +
+        candidates[candidate] +
+        "'></td></tr>"
+    );
   });
 }
 
@@ -133,18 +153,24 @@ function populateTokenData() {
   });
 }
 
-$( document ).ready(function() {
-  if (typeof web3 !== 'undefined') {
-    console.warn("Using web3 detected from external source like Metamask")
+$(document).ready(function() {
+  if (typeof web3 !== "undefined") {
+    console.warn("Using web3 detected from external source like Metamask");
     // Use Mist/MetaMask's provider
     window.web3 = new Web3(web3.currentProvider);
   } else {
-    console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
-    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    console.warn(
+      "No web3 detected. Falling back to https://ropsten.infura.io/DZQCAMdvawWxFyA6OOtD node"
+    );
+    // fallback
+    window.web3 = new Web3(
+      new Web3.providers.HttpProvider(
+        "https://ropsten.infura.io/DZQCAMdvawWxFyA6OOtD"
+      )
+    );
+    console.log("https://ropsten.infura.io/DZQCAMdvawWxFyA6OOtD");
   }
 
   Voting.setProvider(web3.currentProvider);
   populateCandidates();
-
 });
